@@ -1,0 +1,93 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../paper-toast/paper-toast.html">
+<link rel="import" href="../paper-button/paper-button.html">
+
+<!--
+`cookie-consent`
+A material design cookie consent.
+
+@demo demo/index.html
+-->
+
+<dom-module id="cookie-consent">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+    <iron-ajax id="checkCountry"
+               url="https://freegeoip.net/json/"
+               on-response="_checkCountryCode"></iron-ajax>
+  </template>
+
+  <script>
+    Polymer({
+
+      is: 'cookie-consent',
+
+      properties: {
+        cookiesAccepted: {
+          type: Boolean,
+          value: false,
+          notify: true,
+        },
+
+
+
+        countryCodes: {
+          type: Array,
+          readOnly: true,
+          value: function() {
+            return [
+              'AT',
+              'BE',
+              'BG',
+              'HR',
+              'CY',
+              'CZ',
+              'DK',
+              'EE',
+              'FI',
+              'FR',
+              'DE',
+              'GR',
+              'HU',
+              'IE',
+              'IT',
+              'LV',
+              'LT',
+              'LU',
+              'MT',
+              'NL',
+              'PL',
+              'PT',
+              'RO',
+              'SK',
+              'SI',
+              'ES',
+              'SE',
+              'GB',
+            ];
+          },
+        },
+      },
+      _cookieExists: function() {
+        return (document.cookie.indexOf("acceptCookies") >=0)
+      },
+      _checkCountryCode: function(e) {
+        if (this.countryCodes.indexOf(e.detail.response.country_code) >= 0)
+          this.$.consentToast.open();
+        else
+          this._setCookie();
+      },
+      attached: function() {
+        if (!this._cookieExists() && !localStorage.getItem('acceptCookies')) {
+          this.$.checkCountry.generateRequest();
+        }
+      },
+    });
+  </script>
+</dom-module>
