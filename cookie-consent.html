@@ -2,10 +2,15 @@
 <link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../paper-toast/paper-toast.html">
 <link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
 
 <!--
 `cookie-consent`
-A material design cookie consent.
+
+A great, simple and fully customizable material design cookie consent that automatically
+shows up only to the users subject to the cookie law (EU users).
+
+_[Take a look at the component overview for more info](https://www.webcomponents.org/element/Dabolus/cookie-consent)_
 
 @demo demo/index.html
 -->
@@ -14,30 +19,179 @@ A material design cookie consent.
   <template>
     <style>
       :host {
-        display: block;
+        @apply(--cookie-consent);
+      }
+      #consentToast {
+        @apply(--cookie-consent-toast);
+        --paper-toast-color: var(--cookie-consent-text-color, #f1f1f1);
+        --paper-toast-background-color: var(--cookie-consent-background-color, #323232);
+      }
+      #consentToast .text {
+        @apply(--cookie-consent-text);
+        color: var(--cookie-consent-text-color, #f1f1f1);
+      }
+      .policy-link {
+        @apply(--cookie-consent-policy-link);
+        color: var(--cookie-consent-policy-link-color, var(--light-accent-color));
+        text-decoration: none;
+      }
+      .policy-link:hover {
+        text-decoration: underline;
+      }
+      paper-button {
+        @apply(--cookie-consent-buttons);
+        margin: 0;
+        padding: 3px 0;
+        text-align: center;
+      }
+      paper-button.keyboard-focus {
+        font-weight: normal !important;
+      }
+      .horizontal {
+        @apply(--layout-horizontal);
+        padding-top: 10px;
+      }
+      .flex {
+        @apply(--layout-flex);
+      }
+      #rejectButton {
+        @apply(--cookie-consent-reject-button);
+        color: var(--cookie-consent-reject-text-color, var(--disabled-text-color));
+        background: var(--cookie-consent-reject-background, transparent);
+        --paper-button-ink-color: var(--cookie-consent-reject-ink-color, var(--disabled-text-color));
+      }
+      #acceptButton {
+        @apply(--cookie-consent-accept-button);
+        color: var(--cookie-consent-accept-text-color, var(--accent-color));
+        background: var(--cookie-consent-accept-background, transparent);
+        --paper-button-ink-color: var(--cookie-consent-accept-ink-color, var(--accent-color));
       }
     </style>
 
     <iron-ajax id="checkCountry"
-               url="https://freegeoip.net/json/"
+               url="[[geoIpUrl]]"
+               handle-as="json"
                on-response="_checkCountryCode"></iron-ajax>
+
+    <paper-toast id="consentToast" class="fit-bottom" duration="0">
+      <div class="horizontal">
+        <div>
+          <span class="text">[[text]]</span>
+          <template is="dom-if" if="[[policyLink]]">
+            <a href$="[[policyLink]]" class="policy-link">[[policyText]]</a>
+          </template>
+          <content select="span.text"></content>
+          <content select="a.policy-link"></content>
+        </div>
+        <div class="flex"></div>
+        <div>
+          <template is="dom-if" if="[[rejectable]]">
+            <paper-button id="rejectButton" on-tap="_respond" data-response="reject">[[rejectText]]</paper-button>
+          </template>
+          <paper-button id="acceptButton" on-tap="_respond" data-response="accept">[[acceptText]]</paper-button>
+        </div>
+      </div>
+    </paper-toast>
   </template>
 
   <script>
     Polymer({
-
       is: 'cookie-consent',
 
       properties: {
-        cookiesAccepted: {
-          type: Boolean,
-          value: false,
+
+        /**
+         * The url of the API to use to retrieve the user location information.
+         *
+         * You can change it if for some reason the 15,000 queries per hour offered
+         * by [freegeoip.net](https://freegeoip.net/) are not enough for you, or
+         * if you prefer to use your own private api.
+         */
+        geoIpUrl: {
+          type: String,
+          value: 'https://freegeoip.net/json/',
+        },
+        /**
+         * The param that contains the country code of the user
+         * in the result returned from the API.
+         */
+        geoIpParam: {
+          type: String,
+          value: 'country_code',
+        },
+        /**
+         * The current status of the consent.
+         * It can be:
+         * - `pending`: if the user hasn't given the consent yet
+         * - `accepted`: if the user has accepted the consent
+         * - `rejected`: if the user has rejected the consent
+         */
+        cookiesStatus: {
+          type: String,
+          value: 'pending',
+          readOnly: true,
           notify: true,
+          reflectToAttribute: true,
+        },
+        /**
+         * Use the local storage instead of saving user cookie consent to a cookie.
+         */
+        useLocalStorage: Boolean,
+        /**
+         * Use the session storage instead of saving user cookie consent to a cookie.
+         *
+         * This can be useful to test out the cookie consent toast, as the user choice
+         * will be deleted when he closes the browser tab.
+         */
+        useSessionStorage: Boolean,
+
+        /**
+         * The text displayed on the consent.
+         */
+        text: {
+          type: String,
+          value: 'This website uses cookies to give you the best possible experience.',
+        },
+        /**
+         * The link to the cookie policy used by your website (if there is one).
+         */
+        policyLink: String,
+        /**
+         * The text to display on the link to the cookie policy.
+         */
+        policyText: {
+          type: String,
+          value: 'Learn more',
+        },
+        /**
+         * The text to display on the button to accept the cookie policy.
+         */
+        acceptText: {
+          type: String,
+          value: 'Got it!',
+        },
+        /**
+         * The text to display on the button to reject the cookie policy.
+         *
+         * Visible only if the cookie consent is also `rejectable`.
+         */
+        rejectText: {
+          type: String,
+          value: 'No, thanks',
+        },
+        /**
+         * Enable this property if you want the cookie consent to be rejected.
+         */
+        rejectable: Boolean,
+        /**
+         * Seconds to wait before making the toast appear.
+         */
+        secondsBeforeAppearing: {
+          type: Number,
+          value: 0,
         },
 
-
-
-        countryCodes: {
+        _countryCodes: {
           type: Array,
           readOnly: true,
           value: function() {
@@ -74,19 +228,109 @@ A material design cookie consent.
           },
         },
       },
-      _cookieExists: function() {
-        return (document.cookie.indexOf("acceptCookies") >=0)
+      _respond: function(e) {
+        var response = e.target.dataset.response;
+
+        // We got an invalid response
+        if ((response !== "accept") &&
+            (response !== "reject") &&
+            (response !== "true") &&
+            (response !== "false")) {
+          console.error('Error: invalid response!');
+          return;
+        }
+        var answer = (response === "accept") || (response === "true");
+
+        // Priority goes first to the session storage...
+        if (this.useSessionStorage)
+          sessionStorage.setItem('acceptCookies', answer);
+        // ...then to the local storage...
+        else if (this.useLocalStorage)
+          localStorage.setItem('acceptCookies', answer);
+        // ...and in the end, to the cookie
+        else
+          document.cookie = 'acceptCookies=' + answer + '; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/';
+        // Update the cookie consent status
+        this._setCookiesStatus(answer ? 'accepted' : 'rejected');
+        // Close the toast
+        this.$.consentToast.close();
+      },
+      _cookieVal: function() {
+        return document.cookie.replace(/(?:(?:^|.*;\s*)acceptCookies\s*\=\s*([^;]*).*$)|^.*$/, '$1');
       },
       _checkCountryCode: function(e) {
-        if (this.countryCodes.indexOf(e.detail.response.country_code) >= 0)
-          this.$.consentToast.open();
-        else
-          this._setCookie();
+        var response = e.detail.response;
+        // Flag to check if an error happened. In that case, we will use the default URL.
+        var error = false;
+        // The final country code we're going to use
+        var countryCode = '';
+        // The response is only a string.
+        // Just check if it corresponds to a country code, otherwise fallback to the default URL.
+        if (typeof response === 'string') {
+            countryCode = response;
+        } else if (typeof response === 'object') {
+          // Let's check if the object has the key defined by the user.
+          // If we have it, we have most probably found the user location.
+          if (this.geoIpParam in response)
+            countryCode = response[this.geoIpParam];
+          // Argh! The user tried to troll us or we had an error with the user defined API.
+          // Fallback to our beloved and (probably) reliable service
+          else
+            error = true;
+        // Is this even possible?
+        } else
+          error = true;
+
+        var _this = this;
+        if (error) {
+          // That would mean that our reliable service isn't working!
+          // Quit everything to avoid an infinite loop, and show the
+          // user the consent dialog anyways to avoid privacy problems.
+          if (this.geoIpUrl === 'https://freegeoip.net/json/') {
+            setTimeout(function() {
+              _this.$.consentToast.open();
+            }, this.secondsBeforeAppearing * 1000);
+          // User defined service is not working,
+          // set the default params and try again.
+          } else {
+            this.geoIpUrl = 'https://freegeoip.net/json/';
+            this.geoIpParam = 'country_code';
+            this.$.checkCountry.generateRequest();
+          }
+        // We SHOULD be safe here.
+        } else {
+          // User country is NOT subject to the cookie law,
+          // so we consider it as a consent.
+          if (this._countryCodes.indexOf(countryCode) < 0)
+            this._accept();
+          // User country IS subject to the cookie law.
+          // Display the consent.
+          else {
+            setTimeout(function() {
+              _this.$.consentToast.open();
+            }, this.secondsBeforeAppearing * 1000);
+
+          }
+        }
       },
       attached: function() {
-        if (!this._cookieExists() && !localStorage.getItem('acceptCookies')) {
+        var cookie = this._cookieVal();
+        // If the cookie exists
+        if (cookie.length > 0)
+          // Set the correct status
+          this._setCookiesStatus((cookie === 'true') ? 'accepted' : 'rejected');
+        // If there is no cookie, look in the local storage
+        else if (localStorage.acceptCookies)
+          // Set the correct status
+          this._setCookiesStatus((localStorage.getItem('acceptCookies') === 'true') ? 'accepted' : 'rejected');
+        // Last but not least, check in the session storage, even though we should not find it here
+        else if (sessionStorage.acceptCookies)
+          // Set the correct status
+          this._setCookiesStatus((sessionStorage.getItem('acceptCookies') === 'true') ? 'accepted' : 'rejected');
+        // If we cannot find the info anywhere, let's check the
+        // user country to see if we need to display him the consent.
+        else
           this.$.checkCountry.generateRequest();
-        }
       },
     });
   </script>

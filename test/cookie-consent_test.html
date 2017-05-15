@@ -17,12 +17,79 @@
         <cookie-consent></cookie-consent>
       </template>
     </test-fixture>
+    <test-fixture id="usingLocalStorage">
+      <template>
+        <cookie-consent></cookie-consent>
+      </template>
+    </test-fixture>
+    <test-fixture id="usingSessionStorage">
+      <template>
+        <cookie-consent></cookie-consent>
+      </template>
+    </test-fixture>
 
     <script>
       suite('cookie-consent', function() {
+        var consent;
+        var server;
+
+        // Setup a fake server that responds to any XHR with an EU country
+        setup(function() {
+          server = sinon.fakeServer.create();
+          server.respondWith('GET', /.*/, [
+            200,
+            { 'Content-Type': 'application/json' },
+            'IT'
+          ]);
+        });
+        teardown(function() {
+          server.restore();
+        });
+
         test('instantiating the element works', function() {
-          var element = fixture('basic');
-          assert.equal(element.is, 'cookie-consent');
+          consent = fixture('basic');
+          assert.equal(consent.is, 'cookie-consent');
+        });
+
+        test('pending status works', function() {
+          consent = fixture('basic');
+          server.respond();
+          assert.equal(consent.cookiesStatus, 'pending');
+        });
+
+        test('accepting the policy works', function() {
+          consent = fixture('basic');
+          server.respond();
+          consent.$$('#acceptButton').click();
+          assert.equal(consent.cookiesStatus, 'accepted');
+        });
+
+        test('rejecting the policy works', function() {
+          consent = fixture('basic');
+          server.respond();
+          consent.$$('#rejectButton').click();
+          assert.equal(consent.cookiesStatus, 'rejected');
+        });
+
+        test('saving to a cookie works', function() {
+          consent = fixture('basic');
+          server.respond();
+          consent.$$('#acceptButton').click();
+          assert.equal(consent._cookieVal(), 'true');
+        });
+
+        test('saving to local storage works', function() {
+          consent = fixture('usingLocalStorage');
+          server.respond();
+          consent.$$('#acceptButton').click();
+          assert.equal(localStorage.getItem('acceptCookies'), 'true');
+        });
+
+        test('saving to session storage works', function() {
+          consent = fixture('usingSessionStorage');
+          server.respond();
+          consent.$$('#acceptButton').click();
+          assert.equal(sessionStorage.getItem('acceptCookies'), 'true');
         });
       });
     </script>

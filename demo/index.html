@@ -13,14 +13,45 @@
     <link rel="import" href="../cookie-consent.html">
 
     <style is="custom-style" include="demo-pages-shared-styles">
+      body {
+        margin: 0;
+        padding: 0;
+      }
     </style>
   </head>
   <body>
     <div class="vertical-section-container centered">
-      <h3>Basic cookie-consent demo</h3>
-      <demo-snippet>
-        <template>
-          <cookie-consent></cookie-consent>
+      <h3>Fully working example with rejection</h3>
+      <p>In this example, your real position will be mocked so that you can
+      see the toast even if you are outside of the EU.</p>
+      <p>We are also using the <code>use-session-storage</code> option so that
+      you can just close the page and re-open it to test the consent again.</p>
+      <demo-snippet class="centered-demo">
+        <template is="dom-bind">
+          <cookie-consent
+              id="consent"
+              cookies-status="{{state}}"
+              policy-link="#"
+              rejectable
+              seconds-before-appearing="1"
+              geo-ip-url="eu.json"
+              use-session-storage></cookie-consent>
+          <span>Cookie consent state: [[state]]</span>
+          <span id="afterUserResponds">Waiting for user response...</span>
+
+          <script>
+            var afterUserResponds = document.querySelector('#afterUserResponds');
+            document.querySelector('#consent').addEventListener('cookies-status-changed', function(e) {
+              switch (e.detail.value) {
+                case 'accepted':
+                  afterUserResponds.innerHTML = 'The user has accepted, now I can do what I need to!';
+                  break;
+                case 'rejected':
+                  afterUserResponds.innerHTML = 'The user has rejected, no cookies :(';
+                  break;
+              }
+            });
+          </script>
         </template>
       </demo-snippet>
     </div>
