@@ -39,7 +39,7 @@
           server.respondWith('GET', /.*/, [
             200,
             { 'Content-Type': 'application/json' },
-            'IT'
+            '"IT"'
           ]);
           // Clear the cookie
           document.cookie = 'acceptCookies=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
