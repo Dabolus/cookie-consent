@@ -1,5 +1,6 @@
 {
   "name": "cookie-consent",
+  "version": "1.0.1",
   "description": "A material design cookie consent.",
   "main": "cookie-consent.html",
   "dependencies": {
