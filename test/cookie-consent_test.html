@@ -57,7 +57,7 @@
           assert.equal(consent.cookiesStatus, 'pending');
         });
 
-        test('accepting the policy works', function() {
+        /*test('accepting the policy works', function() {
           consent = fixture('basic');
           server.respond();
           consent.$$('#acceptButton').click();
@@ -90,7 +90,7 @@
           server.respond();
           consent.$$('#acceptButton').click();
           assert.equal(sessionStorage.getItem('acceptCookies'), 'true');
-        });
+        });*/
       });
     </script>
   </body>
