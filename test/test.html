@@ -54,7 +54,7 @@
 
         test('instantiating the element works', function() {
           consent = fixture('basic');
-          assert.equal(consent.is, 'cookie-consent');
+          assert.equal(consent.constructor.name, 'CookieConsent');
         });
 
         test('pending status works', function() {
@@ -66,31 +66,32 @@
         test('accepting the policy works', function() {
           consent = fixture('basic');
           server.respond();
-          consent.$$('paper-button').click();
+          consent.shadowRoot.querySelector('paper-button').click();
           assert.equal(consent.cookiesStatus, 'accepted');
         });
 
         test('saving to a cookie works', function() {
           consent = fixture('basic');
           server.respond();
-          consent.$$('paper-button').click();
+          consent.shadowRoot.querySelector('paper-button').click();
           assert.equal(consent._cookieVal(), 'true');
         });
 
         test('saving to local storage works', function() {
           consent = fixture('usingLocalStorage');
           server.respond();
-          consent.$$('paper-button').click();
+          consent.shadowRoot.querySelector('paper-button').click();
           assert.equal(localStorage.getItem('acceptCookies'), 'true');
         });
 
         test('saving to session storage works', function() {
           consent = fixture('usingSessionStorage');
           server.respond();
-          consent.$$('paper-button').click();
+          consent.shadowRoot.querySelector('paper-button').click();
           assert.equal(sessionStorage.getItem('acceptCookies'), 'true');
         });
       });
     </script>
+
   </body>
 </html>
