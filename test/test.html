@@ -52,11 +52,6 @@
           server.restore();
         });
 
-        test('instantiating the element works', function() {
-          consent = fixture('basic');
-          assert.equal(consent.constructor.name, 'CookieConsent');
-        });
-
         test('pending status works', function() {
           consent = fixture('basic');
           server.respond();
