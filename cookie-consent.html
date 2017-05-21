@@ -71,8 +71,8 @@
           <template is="dom-if" if="[[policyLink]]">
             <a href$="[[policyLink]]" class="policy-link">[[policyText]]</a>
           </template>
-          <content select="span.text"></content>
-          <content select="a.policy-link"></content>
+          <slot name="text" class="text"></slot>
+          <slot name="policy-link" class="policy-link"></slot>
         </div>
         <div class="flex"></div>
         <div>
