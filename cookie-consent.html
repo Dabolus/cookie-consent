@@ -274,7 +274,7 @@
         // Just check if it corresponds to a country code, otherwise fallback to the default URL.
         if (typeof response === 'string') {
           countryCode = response;
-        } else if (typeof response === 'object') {
+        } else if (response && typeof response === 'object') {
           // Let's check if the object has the key defined by the user.
           // If we have it, we have most probably found the user location.
           if (this.geoIpParam in response)
