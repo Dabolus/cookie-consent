@@ -21,7 +21,7 @@ shows up only to the users subject to the cookie law (EU users).
 
 ## Installation
 ```
-bower install --save cookie-consent
+bower install --save Dabolus/cookie-consent#^2.0.0
 ```
 
 ## Usage
@@ -39,16 +39,16 @@ bower install --save cookie-consent
 ```
 
 #### Full customization
-You can even set an empty text and then use a span with the class `.text` to insert anything
-you want (icons, etc.). The same can be done with the policy link. Just use the `.policy-link`
-class in an anchor tag inside the `cookie-consent`.
+You can even set an empty text and then use a span with the slot `text` to insert anything
+you want (icons, etc.). The same can be done with the policy link. Just use the `policy-link`
+slot in an anchor tag inside the `cookie-consent`.
 ```html
-<cookie-consent use-local-storage>
-  <span class="text">
+<cookie-consent text="" use-local-storage>
+  <span slot="text">
     This website uses cookies 
     <iron-icon icon="editor:insert-emoticon"></iron-icon>
   </span>
-  <a href="/policy" class="policy-link">Yay!</a>
+  <a href="/policy" slot="policy-link">Yay!</a>
 </cookie-consent>
 ```
 
