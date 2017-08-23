@@ -78,7 +78,7 @@ _[Take a look at the component overview for more info](https://www.webcomponents
         <div>
           <span class="text">[[text]]</span>
           <template is="dom-if" if="[[policyLink]]">
-            <a href$="[[policyLink]]" class="policy-link">[[policyText]]</a>
+            <a href$="[[policyLink]]" target$="[[policyTarget]]" class="policy-link">[[policyText]]</a>
           </template>
           <content select="span.text"></content>
           <content select="a.policy-link"></content>
@@ -156,6 +156,13 @@ _[Take a look at the component overview for more info](https://www.webcomponents
          * The link to the cookie policy used by your website (if there is one).
          */
         policyLink: String,
+        /**
+         * The target for the cookie policy link used by your website (if there is one).
+         */
+         policyTarget: {
+           type: String,
+           value: '_self'
+         },
         /**
          * The text to display on the link to the cookie policy.
          */
