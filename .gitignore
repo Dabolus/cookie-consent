@@ -1,4 +1,4 @@
-# IntelliJ IDEA configuration
 .idea/
-# node_modules directory
 node_modules/
+cookie-consent.js
+cookie-consent.d.ts
