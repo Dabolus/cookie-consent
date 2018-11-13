@@ -10,7 +10,40 @@
 export class CookieConsent extends HTMLElement {
   public static readonly observedAttributes = [''];
 
+  /**
+   * Whether the cookie consent is currently opened or not.
+   *
+   * @return {boolean}
+   */
+  public get opened(): boolean {
+    return this.hasAttribute('opened');
+  }
+
+  public set opened(val: boolean) {
+    if (val) {
+      this.setAttribute('opened', '');
+    } else {
+      this.removeAttribute('opened');
+    }
+  }
+
+  /**
+   * The url of the API to use to retrieve the user location information.
+   *
+   * @return {string}
+   */
+  public get geoIpUrl(): string {
+    return this.getAttribute('geo-ip-url');
+  }
+
+  public set geoIpUrl(val: string) {
+    this.setAttribute('geo-ip-url', val);
+  }
+
   private readonly _template: HTMLTemplateElement;
+  private readonly _textRef: HTMLDivElement;
+  private readonly _rejectRef: HTMLButtonElement;
+  private readonly _acceptRef: HTMLButtonElement;
 
   constructor() {
     super();
@@ -21,7 +54,7 @@ export class CookieConsent extends HTMLElement {
         :host {
           font-family: 'Roboto', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
           position: fixed;
-          top: 0;
+          bottom: 0;
           left: 0;
           width: 100%;
           height: 100%;
@@ -33,17 +66,27 @@ export class CookieConsent extends HTMLElement {
           display: none;
         }
         :host([opened]) {
-          z-index: 9999;
+          z-index: 100;
           transition: .3s z-index step-start;
+          display: flex;
         }
         * {
           box-sizing: border-box;
         }
       </style>
-      <div>TODO</div>
+      <div id="text">
+        This website uses cookies to give you the best possible experience.
+      </div>
+      <div>
+        <button id="reject">No, thanks</button>
+        <button id="accept">Got it!</button>
+      </div>
     `;
     this.attachShadow({ mode: 'open' });
     this.shadowRoot.appendChild(this._template.content.cloneNode(true));
+    this._textRef = this.shadowRoot.querySelector<HTMLDivElement>('#text');
+    this._rejectRef = this.shadowRoot.querySelector<HTMLButtonElement>('#reject');
+    this._acceptRef = this.shadowRoot.querySelector<HTMLButtonElement>('#accept');
   }
 
   /** @private */
